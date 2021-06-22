@@ -32,11 +32,11 @@ TMP = [TMP1,TMP2];
 
 %Check
 s= TMP2(:,32);
-sappde = TMP(:,5001);
-sappdino = imresize(imread(strcat(images_dirNM,'/',listNM(1).name)),[50 50]);
+sappde = TMP(:,8000);
+sappdino = imresize(imread(strcat(images_dirNM,'/',listNM(3000).name)),[50 50]);
 sapp = reshape(sappdino,r*c*ch,1); 
 %It must fail
-if isequal(s,sapp)
+if isequal(sappde,sapp)
     fprintf("PEJNE\n");
 end
 
@@ -53,8 +53,9 @@ AA(:,:)                 =   TMP-repmat(media,1,M);
 [U,lambda]              =   eigen_training(AA);
 T           =   1000; % sara' da cambiare
 X           =   U(:,1:T)'*AA; % projection;
-l = reshape(repmat([1:2],5000,1),M,1);
 %l           =   reshape(repmat([1:40],10,1),400,1);
+
+l = reshape(repmat([1:2],5000,1),M,1);
 [d,N] = size(X);
 K = max(l); % numero classi in gioco;
 
