@@ -1,4 +1,4 @@
-%%SETUP immagini
+%% SETUP immagini - Tempo : 50 secondi
 
 close all
 clear all
@@ -47,7 +47,7 @@ TMP = [TMP1,TMP2]; %Insieme di tutti i valori delle immagini
 %h1=figure; imshow(strcat(images_dirNM,'/',listNM(1).name)); title('Imshow'); 
 %set(gcf,'Name','Imshow','IntegerHandle','off'); 
 %colorbar
-%% Prima parte LDA - Setup e procedura PCA
+%% Prima parte LDA - Setup e procedura PCA - Tempo : 3 minuti 57 secondi
 TMP = double(TMP); %Casting a double
 media = mean(TMP,2); %Media del TMP
 AA(:,:) = TMP-repmat(media,1,M); %Sottrazione della media ai punti delle immagini
@@ -60,7 +60,7 @@ l = reshape(repmat([1:2],5000,1),M,1); %Etichettatura delle prime 5000 immagini 
 [d,N] = size(X); %Dimensione della matrice che contiene i punti proiettati seguendo PCA, quindi dimensione di X
 K = max(l); % numero classi in gioco;
 
-%% Seconda parte LDA - Calcolo matrici within e between class
+%% Seconda parte LDA - Calcolo matrici within e between class - Tempo : 1 secondo
 
 % 1. determino le classi Ck
 for k = 1:K
@@ -102,7 +102,7 @@ Sbx = Sbx/K; %Normalizzazione della between class scatter matrix sul numero di c
 
 MA = inv(Swx)*Sbx; %Applicazione della LDA projection
 
-%% Terza parte LDA - Estrazione dell'autovettore e proiezione dei punti
+%% Terza parte LDA - Estrazione dell'autovettore e proiezione dei punti - Tempo : 1 secondo
 
 % eigenvalues/eigenvectors
 [V,D] = eig(MA); %Estazione degli autovettori dalla porecedente matrice
@@ -118,7 +118,7 @@ A = V(:,1); %Scelgo il singolo migliore autovettore su cui proiettare i punti
 % 6: transformation
 Y = A'*X; %Proiezione vera e propria
 
-%% Plotting dei dati proiettati
+%% Plotting dei dati proiettati - Tempo : 1 secondo
 
 % 7: plot
 figure, scatter(Y,ones(1,N),[],l)
@@ -131,9 +131,3 @@ figure, scatter(Y,ones(1,N),[],l)
 %for i=1:M
 %    text(TMP(1,i),TMP(2,i),num2str(l(i)))
 %end
-
-
-
-
-
-
