@@ -1,9 +1,10 @@
+%% Setup - Preparazione del dataset
 close all
 clear all
 
-%% Import delle immagini 
-images_dir = 'archive/FaceMaskDataset/Train/WithMask/'; %Immagini di train con la maschera
-images_dirNM = 'archive/FaceMaskDataset/Train/WithoutMask/'; %Immagini di train senza maschera
+% Import delle immagini 
+images_dir = 'FaceMaskDataset/Train/WithMask/'; %Immagini di train con la maschera
+images_dirNM = 'FaceMaskDataset/Train/WithoutMask/'; %Immagini di train senza maschera
 list = dir(strcat(images_dir,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
 listNM = dir(strcat(images_dirNM,'*.png')); %Struttura dati che contiene le informazioni delle immagini senza maschera
 M = size(list,1);
@@ -28,61 +29,69 @@ for j=1:size(listNM,1) %Uguale a prima ma vengono aggiunte le immagini senza mas
     TMP2(:,j) = tmp22;
 end
 
-%% LDA1
+%% Prima parte LDA - Calcolo della within e between class matrix
+
+%Casting a double
 TMP1 = double(TMP1);
 TMP2 = double(TMP2);
 
+%Calcolo della media delle 2 classi
 Mu1 = mean(TMP1')';
 Mu2 = mean(TMP2')';
 
-Mu = (Mu1 + Mu2)./3;
+%Calcolo della media di tutti i punti di entrambe le classi
+Mu = (Mu1 + Mu2)./2;
 
+%Calcolo della matrice di covarianza
 S1 = cov(TMP1');
 S2 = cov(TMP2');
 
-%within-class scatter matrix
+%Calcolo della within-class scatter matrix
 Sw = S1 + S2;
 
 
-%number of samples of each class
+%Numero di immagini per ogni classe
 N1 = size(TMP1,2);
 N2 = size(TMP2,2);
 
-%between-class scatter matrix
+%Calcolo della between-class scatter matrix
 SB1 = N1 .* (Mu1-Mu)*(Mu1-Mu)';
 SB2 = N2 .* (Mu2-Mu)*(Mu2-Mu)';
 
+%Somma between-class scatter matrix delle 2 classi
 SB = SB1 + SB2;
 
-%% computing LDA projection
+%% Seconda parte LDA - Calcolo della proiezione di LDA
 invSw = inv(Sw);
 invSW_by_SB = invSw * SB;
 
+%Calcolo degli autovettori
 [V,D] = eig(invSW_by_SB);
 
+%Estrazione dei 2 migliori autovettori della matrice invSW_by_SB
 W1 = V(:,1);
 W2 = V(:,2);
 
-%% plotting
+%Proiezione 
+y1_w1 = W1'*TMP1;
+y2_w1 = W1'*TMP2;
+
+%% Plotting - Stampa dei punti proiettati
+%Stampa dei punti delle 2 classi prima della proiezione di LDA
 figure;
 scatter(TMP1(1,:),TMP1(2,:),'r');
 hold on
 scatter(TMP2(1,:),TMP2(2,:),'b');
-
-
-
-y1_w1 = W1'*TMP1;
-y2_w1 = W1'*TMP2;
-
 %figure, scatter(y1_w1,ones(1,N1),[])
 
+%Stampa dei punti proiettati in una dimensione post-LDA
 figure;
 scatter(y1_w1,ones(1,N1),'r');
 hold on
 scatter(y2_w1,ones(1,N2),'b');
 hold on
 
-%%
+%% Plotting aggiuntivo - Stampa bidimensionale delle gaussiane post-LDA
 
 minY = min([min(y1_w1),min(y2_w1)]);
 maxY = min([max(y1_w1),max(y2_w1)]);
@@ -104,7 +113,7 @@ hold on
 plot(y2_w1_pdf,'b');
 hold on
 
-
+%% Work in progress
 
 y1_w2 = W2'*TMP1;
 y2_w2 = W2'*TMP2;
@@ -128,7 +137,3 @@ plot(line_x1,line_y1,'k-','LineWidth',3);
 hold on
 plot(line_x2,line_y2,'m-','LineWidth',3);
 grid on
-
-%CIAO
-
-
