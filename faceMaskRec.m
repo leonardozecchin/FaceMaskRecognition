@@ -35,7 +35,7 @@ TMP2 = double(TMP2);
 Mu1 = mean(TMP1')';
 Mu2 = mean(TMP2')';
 
-Mu = (Mu1 + Mu2)./3;
+Mu = (Mu1 + Mu2)./2;
 
 S1 = cov(TMP1');
 S2 = cov(TMP2');
