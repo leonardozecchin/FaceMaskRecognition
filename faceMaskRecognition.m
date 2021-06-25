@@ -178,7 +178,8 @@ end
 Test = [Test1,Test2];
 Test = double(Test);
 
-
+% proiezione in una dimensione della matrice delle immagini di Test
+YT = A'*Test;
 
 [row1,col1] = size(Test1);
 [row2,col2] = size(Test2);
@@ -190,27 +191,20 @@ labelTest(:,col1+1:col) = 2;
 C1=[];
 C2=[];
 
-for i = col
-    t = Test(:,i);
+z=0;
+for z=1:col
+    t = YT(:,z);
     LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
     LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
     if LK1 >LK2
-        C1 = [C1,i];
+        C1 = [C1,z];
     else
-        C2 = [C2,i];
+        C2 = [C2,z];
     end
-    i
+    
 end
 
 
-t = Test(:,5000);
-LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
-LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
-if LK1 >LK2
-    C1 = [C1,5000];
-else
-    C2 = [C2,5000];
-end
 
 
 
