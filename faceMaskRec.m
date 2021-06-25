@@ -1,4 +1,4 @@
-%% Setup - Preparazione del dataset
+%% Setup - Preparazione del dataset - Tempo : 1 minuto
 close all
 clear all
 
@@ -29,7 +29,7 @@ for j=1:size(listNM,1) %Uguale a prima ma vengono aggiunte le immagini senza mas
     TMP2(:,j) = tmp22;
 end
 
-%% Prima parte LDA - Calcolo della within e between class matrix
+%% Prima parte LDA - Calcolo della within e between class matrix - Tempo : 12 secondi
 
 %Casting a double
 TMP1 = double(TMP1);
@@ -61,7 +61,7 @@ SB2 = N2 .* (Mu2-Mu)*(Mu2-Mu)';
 %Somma between-class scatter matrix delle 2 classi
 SB = SB1 + SB2;
 
-%% Seconda parte LDA - Calcolo della proiezione di LDA
+%% Seconda parte LDA - Calcolo della proiezione di LDA - Tempo : 4 minuti e 41 secondi
 invSw = inv(Sw);
 invSW_by_SB = invSw * SB;
 
@@ -76,7 +76,7 @@ W2 = V(:,2);
 y1_w1 = W1'*TMP1;
 y2_w1 = W1'*TMP2;
 
-%% Plotting - Stampa dei punti proiettati
+%% Plotting - Stampa dei punti proiettati - Tempo : 3 secondi
 %Stampa dei punti delle 2 classi prima della proiezione di LDA
 figure;
 scatter(TMP1(1,:),TMP1(2,:),'r');
@@ -91,7 +91,7 @@ hold on
 scatter(y2_w1,ones(1,N2),'b');
 hold on
 
-%% Plotting aggiuntivo - Stampa bidimensionale delle gaussiane post-LDA
+%% Plotting aggiuntivo - Stampa bidimensionale delle gaussiane post-LDA - Tempo : 1 secondo
 
 minY = min([min(y1_w1),min(y2_w1)]);
 maxY = min([max(y1_w1),max(y2_w1)]);
