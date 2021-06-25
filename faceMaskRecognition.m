@@ -150,20 +150,50 @@ hold on
 scatter(Y2,normpdf(Y2,mean2,sigma2)*100,10,'r');
 
 
-%% Learning-Ricerca della Maximum Likelihood MERDAAAAAAAAAAAAAAAAAAAAAAA
+%% Learning-Ricerca della Maximum Likelihood 
+
+images_dirTest = 'archive/FaceMaskDataset/Test/WithMask/'; %Immagini di train con la maschera
+images_dirTestNM = 'archive/FaceMaskDataset/Test/WithoutMask/'; %Immagini di train senza maschera
+listTest = dir(strcat(images_dirTest,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
+listTestNM = dir(strcat(images_dirTestNM,'*.png'));
+
+MT = size(listTest,1);
+MT = MT + size(listTestNM,1) %Numero delle immagini insieme
+tmpT = imresize(imread(strcat(images_dirTest,'/',listTest(1).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
+[r,c,ch] = size(tmpT); %Dimensioni delle immagini, altezza, larghezza e colore
+
+for i=1:size(listTest,1) %Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
+    test         =   imresize(imread(strcat(images_dirTest,'/',listTest(i).name)),[30 30]);
+    test1        =   reshape(test,r*c*ch,1);                                
+    Test1(:,i)    =   test1; 
+end
+
+for j=1:size(listNM,1) %Uguale a prima ma vengono aggiunte le immagini senza maschera e in ordine
+    test2 = imresize(imread(strcat(images_dirNM,'/',listNM(j).name)),[30 30]);
+    test22        =   reshape(test2,r*c*ch,1);
+    Test2(:,j) = test22;
+end
+
+
+Test = [Test1,Test2];
+Test = double(Test);
 
 
 
+[row1,col1] = size(Test1);
+[row2,col2] = size(Test2);
+[row,col] = size(Test);
+
+labelTest = ones(1,col);
+labelTest(:,col1+1:col) = 2;
 
 C1=[];
 C2=[];
-testtot = setdiff([1:12],Y);
-for i=testtot
-    test = imread(strcat( images_dir,strcat(num2str(i),'.png')));
-    test = test(1:4:end,1:4:end);
-    test = test(:);
-    LK1 = sum(log(normpdf(double(test),double(mean1),double(sigma1'+eps))));
-    LK2 = sum(log(normpdf(double(test),double(mean2),double(sigma2'+eps))));
+
+for i = col
+    t = Test(:,i);
+    LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
+    LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
     if LK1 >LK2
         C1 = [C1,i];
     else
@@ -172,29 +202,15 @@ for i=testtot
     i
 end
 
-test = imread(strcat( images_dirNM,'4.png'));
-test = test(1:4:end,1:4:end);
-test = test(:);
-LK1 = sum(log(normpdf(double(test),double(mean1),double(sigma1'+eps))));
-LK2 = sum(log(normpdf(double(test),double(mean2),double(sigma2'+eps))));
-if LK1 >LK2
-    C1 = [C1,i];
-else
-    C2 = [C2,i];
-end
-    
 
-test = rgb2gray(imread(strcat( images_dir,'4.png')));
-test = test(1:4:end,1:4:end);
-test = test(:);
-LK1 = sum(log(normpdf(double(test),double(mean1),double(sigma1'+eps))));
-LK2 = sum(log(normpdf(double(test),double(mean2),double(sigma2'+eps))));
+t = Test(:,5000);
+LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
+LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
 if LK1 >LK2
-    C1 = [C1,i];
+    C1 = [C1,5000];
 else
-    C2 = [C2,i];
+    C2 = [C2,5000];
 end
-
 
 
 
