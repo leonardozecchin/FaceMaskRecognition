@@ -245,7 +245,7 @@ accuracy = sum(diag(confmat))/sum(confmat(:))
 
 
 
-
+%Creo due array che contengono i falsi positivi in C1 e C2
 fakeC1= [];
 for i=1:length(C1)
     if C1(i)>483
@@ -261,6 +261,8 @@ for i=1:length(C2)
 end
    
 
+%qui cambio la numerazione dei falsi positivi in C1 per avere i numeri
+%corretti corrispondenti alla cartella delle immagini di NoMask
 false_positive1 = [];
 for i=1:length(fakeC1)
     if fakeC1(i)>483
@@ -270,7 +272,7 @@ for i=1:length(fakeC1)
 end
 
 
-
+%Stampare le immagini
 img = imread(strcat(images_dirTest,'/',listTest(483).name));
 imshow(img);
 img = imread(strcat(images_dirTestNM,'/',listTestNM(27).name));
