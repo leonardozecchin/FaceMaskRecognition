@@ -225,6 +225,53 @@ for i=C2;
 end
 accuracy = countc/count; %controllo di quelli giusti fratto quelli che sono da controllare (se si esegue mi dà 0.9)
 
+classif = labelTest.*0;
+classif(C1)=1;
+classif(C2)=2;
+goodtest = find(classif~=0);
+confmat = zeros(2,2);
+for i=1:length(goodtest)
+    el = goodtest(i);
+     confmat(classif(el),labelTest(el))=...
+         confmat(classif(el),labelTest(el))+1;
+end
+
+num_class = 2;
+for i=1:num_class
+    precision(i) = confmat(i,i)/(sum(confmat(:,i)));
+    recall(i) = confmat(i,i)/(sum(confmat(i,:)));
+end
+accuracy = sum(diag(confmat))/sum(confmat(:))
 
 
 
+
+fakeC1= [];
+for i=1:length(C1)
+    if C1(i)>483
+        fakeC1 = [fakeC1,C1(i)];
+    end
+end
+    
+fakeC2= [];
+for i=1:length(C2)
+    if C2(i)<484
+        fakeC2 = [fakeC2,C2(i)];
+    end
+end
+   
+
+false_positive1 = [];
+for i=1:length(fakeC1)
+    if fakeC1(i)>483
+        value = col - fakeC1(i);
+        false_positive1 = [false_positive1,col2-value];
+    end
+end
+
+
+
+img = imread(strcat(images_dirTest,'/',listTest(483).name));
+imshow(img);
+img = imread(strcat(images_dirTestNM,'/',listTestNM(27).name));
+imshow(img);
