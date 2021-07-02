@@ -158,18 +158,19 @@ listTest = dir(strcat(images_dirTest,'*.png')); %Struttura dati che contiene le 
 listTestNM = dir(strcat(images_dirTestNM,'*.png'));
 
 MT = size(listTest,1);
-MT = MT + size(listTestNM,1) %Numero delle immagini insieme
-tmpT = imresize(imread(strcat(images_dirTest,'/',listTest(1).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
-[r,c,ch] = size(tmpT); %Dimensioni delle immagini, altezza, larghezza e colore
+MT = MT + size(listTestNM,1) %Numero delle immagini insiemeq
 
 for i=1:size(listTest,1) %Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
-    test         =   imresize(imread(strcat(images_dirTest,'/',listTest(i).name)),[30 30]);
+    test         =   imresize(imread(strcat(images_dirTest,'/',listTest(i).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
+    [r,c,ch] = size(test); %Dimensioni delle immagini, altezza, larghezza e colore
+
     test1        =   reshape(test,r*c*ch,1);                                
     Test1(:,i)    =   test1; 
 end
 
-for j=1:size(listNM,1) %Uguale a prima ma vengono aggiunte le immagini senza maschera e in ordine
-    test2 = imresize(imread(strcat(images_dirNM,'/',listNM(j).name)),[30 30]);
+for j=1:size(listTestNM,1) %Uguale a prima ma vengono aggiunte le immagini senza maschera e in ordine
+    test2 = imresize(imread(strcat(images_dirTestNM,'/',listTestNM(j).name)),[30 30]);
+    [r,c,ch] = size(test2);
     test22        =   reshape(test2,r*c*ch,1);
     Test2(:,j) = test22;
 end
@@ -201,9 +202,28 @@ for z=1:col
     else
         C2 = [C2,z];
     end
-    
 end
 
+
+%t = YT(:,1);
+%LK1 =log(normpdf(double(t),double(mean1),double(sigma1'+eps)));
+%LK2 = log(normpdf(double(t),double(mean2),double(sigma2'+eps)));
+
+%classi delle immagini conosciute a priori
+countc = 0;
+count = length(labelTest); % subtract the training elements
+for i=C1;
+    if labelTest(i)==1
+        countc = countc + 1;
+    end
+end
+
+for i=C2;
+    if labelTest(i)==2
+        countc = countc + 1;
+    end
+end
+accuracy = countc/count; %controllo di quelli giusti fratto quelli che sono da controllare (se si esegue mi dà 0.9)
 
 
 
