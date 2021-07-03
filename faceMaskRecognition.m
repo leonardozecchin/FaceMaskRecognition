@@ -1,38 +1,65 @@
-%%SETUP immagini
+%% Setup - Gestione delle immagini del dataset - Tempo : 24 secondi
 
 close all
 clear all
 
-%Import delle immagini 
-images_dir = 'archive/FaceMaskDataset/Train/WithMask/'; %Immagini di train con la maschera
-images_dirNM = 'archive/FaceMaskDataset/Train/WithoutMask/'; %Immagini di train senza maschera
+%Import delle immagini di training
+images_dir = 'FaceMaskDataset/Train/WithMask/'; 
+images_dirNM = 'FaceMaskDataset/Train/WithoutMask/';
 list = dir(strcat(images_dir,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
 listNM = dir(strcat(images_dirNM,'*.png')); %Struttura dati che contiene le informazioni delle immagini senza maschera
 M = size(list,1);
 M = M + size(listNM,1) %Numero delle immagini insieme
-%fact = 0.2; % resizing percentage factor % Non serve più perché facciamo
-%il resize in modo diverso
 tmp = imresize(imread(strcat(images_dir,'/',list(1).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
-%tmp1 = imread(strcat(images_dir,'/',list(2).name));
-%[r1,c1,ch1] = size(tmp1);
 [r,c,ch] = size(tmp); %Dimensioni delle immagini, altezza, larghezza e colore
-%label = ([ones(180,1);ones(157,1)*2]);
 
-for i=1:size(list,1) %Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
+%Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
+for i=1:size(list,1)
     tmp         =   imresize(imread(strcat(images_dir,'/',list(i).name)),[30 30]);
     tmp1        =   reshape(tmp,r*c*ch,1);                                
     TMP1(:,i)    =   tmp1; 
 end
 
-for j=1:size(listNM,1) %Uguale a prima ma vengono aggiunte le immagini senza maschera e in ordine
+for j=1:size(listNM,1)
     tmp2 = imresize(imread(strcat(images_dirNM,'/',listNM(j).name)),[30 30]);
     tmp22        =   reshape(tmp2,r*c*ch,1);
     TMP2(:,j) = tmp22;
 end
 
-TMP = [TMP1,TMP2]; %Insieme di tutti i valori delle immagini
+%Insieme di tutti i valori delle immagini di training
+TMP = [TMP1,TMP2];
 
-%% Prima parte LDA - Setup e procedura PCA
+%Import delle immagini di testing
+images_dirTest = 'FaceMaskDataset/Test/WithMask/'; %Immagini di train con la maschera
+images_dirTestNM = 'FaceMaskDataset/Test/WithoutMask/'; %Immagini di train senza maschera
+listTest = dir(strcat(images_dirTest,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
+listTestNM = dir(strcat(images_dirTestNM,'*.png')); %Struttura dati che contiene le informazioni delle immagini senza maschera 
+
+MT = size(listTest,1);
+MT = MT + size(listTestNM,1) %Numero delle immagini insieme
+
+%Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
+for i=1:size(listTest,1)
+    test         =   imresize(imread(strcat(images_dirTest,'/',listTest(i).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
+    [r,c,ch] = size(test); %Dimensioni delle immagini, altezza, larghezza e colore
+
+    test1        =   reshape(test,r*c*ch,1);                                
+    Test1(:,i)    =   test1; 
+end
+
+for j=1:size(listTestNM,1)
+    test2 = imresize(imread(strcat(images_dirTestNM,'/',listTestNM(j).name)),[30 30]);
+    [r,c,ch] = size(test2);
+    test22        =   reshape(test2,r*c*ch,1);
+    Test2(:,j) = test22;
+end
+
+%Insieme di tutti i valori delle immagini di testing
+Test = [Test1,Test2];
+Test = double(Test);
+
+
+%% Prima parte LDA - Setup e procedura PCA (deprecato)
 
 %media = mean(TMP,2); %Media del TMP
 
@@ -44,12 +71,13 @@ TMP = [TMP1,TMP2]; %Insieme di tutti i valori delle immagini
  % numero classi in gioco;
 
 
-%% Seconda parte LDA - Calcolo matrici within e between class
-TMP = double(TMP); %Casting a double
+%% Seconda parte LDA - Calcolo matrici within e between class - Tempo : 3 minuti 46 secondi
+
+TMP = double(TMP);
 l = reshape(repmat([1:2],5000,1),M,1); %Etichettatura delle prime 5000 immagini come immagini con mascherina e le seconde 5000 come senza mascherina
-%l = reshape(repmat([1:40],10,1),400,1);
-[d,N] = size(TMP); %Dimensione della matrice che contiene i punti proiettati seguendo PCA, quindi dimensione di X
+[d,N] = size(TMP); %Dimensione della matrice che contiene i punti
 K = max(l);
+
 % 1. determino le classi Ck
 for k = 1:K
     a = find (l == k); %Prende le posizioni delle immagini prima che hanno etichetta 1 in l e poi 2
@@ -90,7 +118,7 @@ Sbx = Sbx/K; %Normalizzazione della between class scatter matrix sul numero di c
 
 MA = inv(Swx)*Sbx; %Applicazione della LDA projection
 
-%% Terza parte LDA - Estrazione dell'autovettore e proiezione dei punti
+%% Terza parte LDA - Estrazione dell'autovettore e proiezione dei punti - Tempo : 9 secondi
 
 % eigenvalues/eigenvectors
 [V,D] = eig(MA); %Estazione degli autovettori dalla porecedente matrice
@@ -114,7 +142,7 @@ mean1 = mean(Y1);
 sigma2 = std(Y2);
 mean2 = mean(Y2);
 
-%% Plotting dei dati proiettati
+%% Plotting - Stampa dati prima e dopo LDA - Tempo : 3 secondi
 % 7: plot
 %figure;
 %scatter(Y,ones(1,N),[],l);
@@ -150,38 +178,13 @@ hold on
 scatter(Y2,normpdf(Y2,mean2,sigma2)*100,10,'r');
 
 
-%% Learning-Ricerca della Maximum Likelihood 
-
-images_dirTest = 'archive/FaceMaskDataset/Test/WithMask/'; %Immagini di train con la maschera
-images_dirTestNM = 'archive/FaceMaskDataset/Test/WithoutMask/'; %Immagini di train senza maschera
-listTest = dir(strcat(images_dirTest,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
-listTestNM = dir(strcat(images_dirTestNM,'*.png'));
-
-MT = size(listTest,1);
-MT = MT + size(listTestNM,1) %Numero delle immagini insiemeq
-
-for i=1:size(listTest,1) %Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
-    test         =   imresize(imread(strcat(images_dirTest,'/',listTest(i).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
-    [r,c,ch] = size(test); %Dimensioni delle immagini, altezza, larghezza e colore
-
-    test1        =   reshape(test,r*c*ch,1);                                
-    Test1(:,i)    =   test1; 
-end
-
-for j=1:size(listTestNM,1) %Uguale a prima ma vengono aggiunte le immagini senza maschera e in ordine
-    test2 = imresize(imread(strcat(images_dirTestNM,'/',listTestNM(j).name)),[30 30]);
-    [r,c,ch] = size(test2);
-    test22        =   reshape(test2,r*c*ch,1);
-    Test2(:,j) = test22;
-end
+%% Learning del modello - Ricerca della Maximum Likelihood - Tempo : 1 secondo
 
 
-Test = [Test1,Test2];
-Test = double(Test);
-
-% proiezione in una dimensione della matrice delle immagini di Test
+%Proiezione dei dati di test usando LDA
 YT = A'*Test;
 
+%Memorizzazione dimensione test
 [row1,col1] = size(Test1);
 [row2,col2] = size(Test2);
 [row,col] = size(Test);
@@ -189,14 +192,18 @@ YT = A'*Test;
 labelTest = ones(1,col);
 labelTest(:,col1+1:col) = 2;
 
+%Creazione delle classi with_mask without_mask
 C1=[];
 C2=[];
+%z=0; Provo a commentarlo
 
-z=0;
+%Learning del modello generativo di Bayes
 for z=1:col
     t = YT(:,z);
+    %Calcolo della likehood per ogni punto del dataset di learning
     LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
     LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
+    %Classificazione del punto
     if LK1 >LK2
         C1 = [C1,z];
     else
@@ -204,12 +211,9 @@ for z=1:col
     end
 end
 
+%% Prima parte accuratezza - Calcolo accuracy - Tempo : 1 secondo
 
-%t = YT(:,1);
-%LK1 =log(normpdf(double(t),double(mean1),double(sigma1'+eps)));
-%LK2 = log(normpdf(double(t),double(mean2),double(sigma2'+eps)));
-
-%classi delle immagini conosciute a priori
+%Classi delle immagini conosciute a priori
 countc = 0;
 count = length(labelTest); % subtract the training elements
 for i=C1;
@@ -223,13 +227,16 @@ for i=C2;
         countc = countc + 1;
     end
 end
-accuracy = countc/count; %controllo di quelli giusti fratto quelli che sono da controllare (se si esegue mi dà 0.9)
+%Calcolo accuracy
+accuracy = countc/count;
+
+%% Seconda parte accurattezza - Calcolo matrice di confusione - Tempo : 1 secondo
 
 classif = labelTest.*0;
 classif(C1)=1;
 classif(C2)=2;
 goodtest = find(classif~=0);
-confmat = zeros(2,2);
+confmat = zeros(2,2); %Matrice di confusione
 for i=1:length(goodtest)
     el = goodtest(i);
      confmat(classif(el),labelTest(el))=...
@@ -242,8 +249,6 @@ for i=1:num_class
     recall(i) = confmat(i,i)/(sum(confmat(i,:)));
 end
 accuracy = sum(diag(confmat))/sum(confmat(:))
-
-
 
 %Creo due array che contengono i falsi positivi in C1 e C2
 fakeC1= [];
@@ -271,9 +276,97 @@ for i=1:length(fakeC1)
     end
 end
 
+%% Plotting - Stampa risultati finali di classificazione
 
-%Stampare le immagini
-img = imread(strcat(images_dirTest,'/',listTest(483).name));
-imshow(img);
-img = imread(strcat(images_dirTestNM,'/',listTestNM(27).name));
-imshow(img);
+%Stampare le immagini richieste dell'insieme
+%img = imread(strcat(images_dirTest,'/',listTest(483).name));
+%imshow(img);
+%img = imread(strcat(images_dirTestNM,'/',listTestNM(27).name));
+%imshow(img);
+
+%% Plotting - Work in progress
+
+%function [] = plot_result_matrix(precision,recall, accuracy,method)
+method = 'Single gaussian estimated parameters';
+symbol_max = 'max';
+symbol_min = 'min';
+
+features_vec = ([1:5] *10).^2 * 3;
+
+figure('NumberTitle', 'off', 'Name', method);
+subplot(2,1,1)
+
+%precision = [result_matrix{1,1}.precision result_matrix{1,2}.precision result_matrix{1,3}.precision result_matrix{1,4}.precision result_matrix{1,5}.precision];
+%recall = [result_matrix{1,1}.recall result_matrix{1,2}.recall result_matrix{1,3}.recall result_matrix{1,4}.recall result_matrix{1,5}.recall];
+%accuracy = [result_matrix{1,1}.accuracy result_matrix{1,2}.accuracy result_matrix{1,3}.accuracy result_matrix{1,4}.accuracy result_matrix{1,5}.accuracy];
+
+plot(features_vec,precision);
+
+[y,x] = max(precision);
+text((x*10).^2*3,y,symbol_max);
+
+[~,x] = find(precision == min(min(precision)));
+text((x*10).^2*3,min(min(precision)),symbol_min);
+
+hold on;
+plot(features_vec,recall);
+
+[y,x] = max(recall);
+text((x*10).^2*3,y,symbol_max);
+
+[~,x] = find(recall == min(min(recall)));
+text((x*10).^2*3,min(min(recall)),symbol_min);
+
+hold on;
+plot(features_vec,accuracy);
+
+[y,x] = max(accuracy);
+text((x*10).^2*3,y,symbol_max);
+
+[~,x] = find(accuracy == min(min(accuracy)));
+text((x*10).^2*3,min(min(accuracy)),symbol_min);
+
+
+title('test set')
+xlabel('features')
+
+legend({'precision','recall','accuracy'},'Location','southwest')
+
+subplot(2,1,2)
+
+precision = [a{2,1}.precision a{2,2}.precision a{2,3}.precision a{2,4}.precision a{2,5}.precision];
+recall = [a{2,1}.recall a{2,2}.recall a{2,3}.recall a{2,4}.recall a{2,5}.recall];
+accuracy = [a{2,1}.accuracy a{2,2}.accuracy a{2,3}.accuracy a{2,4}.accuracy a{2,5}.accuracy];
+
+plot(features_vec,precision);
+
+[y,x] = max(precision);
+text((x*10).^2*3,y,symbol_max);
+
+[~,x] = find(precision == min(min(precision)));
+text((x*10).^2*3,min(min(precision)),symbol_min);
+
+hold on;
+plot(features_vec,recall);
+
+[y,x] = max(recall);
+text((x*10).^2*3,y,symbol_max);
+
+[~,x] = find(recall == min(min(recall)));
+text((x*10).^2*3,min(min(recall)),symbol_min);
+
+hold on;
+plot(features_vec,accuracy);
+
+[y,x] = max(accuracy);
+text((x*10).^2*3,y,symbol_max);
+
+[~,x] = find(accuracy == min(min(accuracy)));
+text((x*10).^2*3,min(min(accuracy)),symbol_min);
+
+title('validation set')
+xlabel('features')
+
+legend({'precision','recall','accuracy'},'Location','southwest')
+%end
+
