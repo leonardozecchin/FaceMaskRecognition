@@ -198,64 +198,16 @@ scatter(Y2,normpdf(Y2,mean2,sigma2)*100,10,'r');
 %Proiezione dei dati di test usando LDA
 YT = A'*Test;
 
-%Memorizzazione dimensione test
-[row,col1] = size(Test1);
-[row,col2] = size(Test2);
-[row,col] = size(Test);
+[WithMask,NoMask,labelTest] = classifier(YT,Test,Test1,Test2,mean1,sigma1,mean2,sigma2);
 
-labelTest = ones(1,col);
-labelTest(:,col1+1:col) = 2;
-
-%Creazione delle classi with_mask without_mask
-WithMask=[];
-NoMask=[];
-%z=0; Provo a commentarlo
-
-%Learning del modello generativo di Bayes
-for z=1:col
-    t = YT(:,z);
-    %Calcolo della likehood per ogni punto del dataset di learning
-    LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
-    LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
-    %Classificazione del punto
-    if LK1 >LK2
-        WithMask = [WithMask,z];
-    else
-        NoMask = [NoMask,z];
-    end
-end
 
 %% Calssification with images of Validation folders - Ricerca della Maximum Likelihood - Tempo : 1 secondo
 
 %Proiezione dei dati di test usando LDA
 YV = A'*Val;
 
-%Memorizzazione dimensione test
-[row,col1v] = size(Val1);
-[row,col2v] = size(Val2);
-[row,colv] = size(Val);
+[WithMaskVal,NoMaskVal,labelVal] = classifier(YV,Val,Val1,Val2,mean1,sigma1,mean2,sigma2);
 
-labelVal = ones(1,colv);
-labelVal(:,col1v+1:colv) = 2;
-
-%Creazione delle classi with_mask without_mask
-WithMaskVal=[];
-NoMaskVal=[];
-%z=0; Provo a commentarlo
-
-%Learning del modello generativo di Bayes
-for z=1:colv
-    t = YV(:,z);
-    %Calcolo della likehood per ogni punto del dataset di learning
-    LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
-    LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
-    %Classificazione del punto
-    if LK1 >LK2
-        WithMaskVal = [WithMaskVal,z];
-    else
-        NoMaskVal = [NoMaskVal,z];
-    end
-end
 
 
 %% Prima parte accuratezza - Calcolo accuracy - Tempo : 1 secondo
