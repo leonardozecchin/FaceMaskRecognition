@@ -1,0 +1,82 @@
+AccurancyTest = [0.930443548387097,0.922379032258065,0.905241935483871, 0.872983870967742];
+AccurancyValidation = [0.940000000000000,0.922500000000000,0.916250000000000, 0.890000000000000];
+
+PrecisionTest1 = [0.917184265010352,0.902691511387164,0.865424430641822,0.819875776397516];
+PrecisionTest2 = [0.943025540275049,0.941060903732810,0.943025540275049,0.923379174852652];
+
+RecallTest1 = [0.938559322033898,0.935622317596567,0.935123042505593,0.910344827586207];
+RecallTest2 = [0.923076923076923,0.910646387832700,0.880733944954129,0.843806104129264];
+
+PrecisionVal1 = [0.930000000000000,0.910000000000000,0.905000000000000,0.862500000000000];
+PrecisionVal2 = [0.950000000000000,0.935000000000000,0.927500000000000,0.917500000000000];
+
+RecallVal1 = [0.948979591836735,0.933333333333333,0.925831202046036,0.912698412698413];
+RecallVal2 = [0.931372549019608,0.912195121951220,0.907090464547677,0.869668246445498];
+
+PrecisionTest40 = [0.819875776397516,0.923379174852652];
+PrecisionVal40 = [0.862500000000000,0.917500000000000];
+RecallTest40 = [0.910344827586207,0.843806104129264];
+RecallVal40 = [0.912698412698413,0.869668246445498];
+
+PrecisionTest30 = [0.865424430641822,0.943025540275049];
+PrecisionVal30 = [0.905000000000000,0.927500000000000];
+RecallTest30 = [0.935123042505593,0.880733944954129];
+RecallVal30 = [0.925831202046036,0.907090464547677];
+
+PrecisionTest20 = [0.902691511387164,0.941060903732810];
+PrecisionVal20 = [0.910000000000000,0.935000000000000];
+RecallTest20 = [0.935622317596567,0.910646387832700];
+RecallVal20 = [0.933333333333333,0.912195121951220];
+
+PrecisionTest10 = [0.917184265010352,0.943025540275049];
+PrecisionVal10 = [0.930000000000000,0.950000000000000];
+RecallTest10 = [0.938559322033898,0.923076923076923];
+RecallVal10 = [0.948979591836735,0.931372549019608];
+
+Acc = [10,20,30,40];
+
+
+subplot(2,1,1);
+plot(Acc,AccurancyTest);
+title("Accurancy Test images");
+
+subplot(2,1,2);
+plot(Acc,AccurancyValidation);
+title("Accurancy Validation images");
+
+figure;
+subplot(4,1,1);
+plot(Acc,PrecisionTest1);
+title("Precision Test images WithMask Class");
+
+subplot(4,1,2);
+plot(Acc,PrecisionTest2);
+title("Precision Test images NoMask Class");
+
+subplot(4,1,3);
+plot(Acc,PrecisionVal1);
+title("Precision Validation images WithMask Class");
+subplot(4,1,4);
+plot(Acc,PrecisionVal1);
+title("Precision Validation images NoMask Class");
+
+figure;
+subplot(4,1,1);
+plot(Acc,RecallTest1);
+title("Recall Test images WithMask Class");
+
+subplot(4,1,2);
+plot(Acc,RecallTest2);
+title("Recall Test images NoMask Class");
+
+subplot(4,1,3);
+plot(Acc,RecallVal1);
+title("Recall Validation images WithMask Class");
+subplot(4,1,4);
+plot(Acc,RecallVal1);
+title("Recall Validation images NoMask Class");
+
+
+
+
+

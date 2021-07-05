@@ -3,6 +3,7 @@
 close all
 clear all
 
+pixel_num = 10;
 %Import delle immagini di training
 images_dir = 'archive/FaceMaskDataset/Train/WithMask/'; 
 images_dirNM = 'archive/FaceMaskDataset/Train/WithoutMask/';
@@ -10,18 +11,18 @@ list = dir(strcat(images_dir,'*.png')); %Struttura dati che contiene le informaz
 listNM = dir(strcat(images_dirNM,'*.png')); %Struttura dati che contiene le informazioni delle immagini senza maschera
 M = size(list,1);
 M = M + size(listNM,1) %Numero delle immagini insieme
-tmp = imresize(imread(strcat(images_dir,'/',list(1).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
+tmp = imresize(imread(strcat(images_dir,'/',list(1).name)),[pixel_num pixel_num]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
 [r,c,ch] = size(tmp); %Dimensioni delle immagini, altezza, larghezza e colore
 
 %Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
 for i=1:size(list,1)
-    tmp         =   imresize(imread(strcat(images_dir,'/',list(i).name)),[30 30]);
+    tmp         =   imresize(imread(strcat(images_dir,'/',list(i).name)),[pixel_num pixel_num]);
     tmp1        =   reshape(tmp,r*c*ch,1);                                
     TMP1(:,i)    =   tmp1; 
 end
 
 for j=1:size(listNM,1)
-    tmp2 = imresize(imread(strcat(images_dirNM,'/',listNM(j).name)),[30 30]);
+    tmp2 = imresize(imread(strcat(images_dirNM,'/',listNM(j).name)),[pixel_num pixel_num]);
     tmp22        =   reshape(tmp2,r*c*ch,1);
     TMP2(:,j) = tmp22;
 end
@@ -40,7 +41,7 @@ MT = MT + size(listTestNM,1) %Numero delle immagini insieme
 
 %Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
 for i=1:size(listTest,1)
-    test         =   imresize(imread(strcat(images_dirTest,'/',listTest(i).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
+    test         =   imresize(imread(strcat(images_dirTest,'/',listTest(i).name)),[pixel_num pixel_num]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
     [r,c,ch] = size(test); %Dimensioni delle immagini, altezza, larghezza e colore
 
     test1        =   reshape(test,r*c*ch,1);                                
@@ -48,7 +49,7 @@ for i=1:size(listTest,1)
 end
 
 for j=1:size(listTestNM,1)
-    test2 = imresize(imread(strcat(images_dirTestNM,'/',listTestNM(j).name)),[30 30]);
+    test2 = imresize(imread(strcat(images_dirTestNM,'/',listTestNM(j).name)),[pixel_num pixel_num]);
     [r,c,ch] = size(test2);
     test22        =   reshape(test2,r*c*ch,1);
     Test2(:,j) = test22;
@@ -69,7 +70,7 @@ numimgVal = numimgVal + size(listValNM,1) %Numero delle immagini insieme
 
 %Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
 for i=1:size(listVal,1)
-    val         =   imresize(imread(strcat(images_dirVal,'/',listVal(i).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
+    val         =   imresize(imread(strcat(images_dirVal,'/',listVal(i).name)),[pixel_num pixel_num]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
     [r,c,ch] = size(val); %Dimensioni delle immagini, altezza, larghezza e colore
 
     val1        =   reshape(val,r*c*ch,1);                                
@@ -77,7 +78,7 @@ for i=1:size(listVal,1)
 end
 
 for j=1:size(listValNM,1)
-    val2 = imresize(imread(strcat(images_dirValNM,'/',listValNM(j).name)),[30 30]);
+    val2 = imresize(imread(strcat(images_dirValNM,'/',listValNM(j).name)),[pixel_num pixel_num]);
     [r,c,ch] = size(val2);
     val22        =   reshape(val2,r*c*ch,1);
     Val2(:,j) = val22;
@@ -87,7 +88,7 @@ end
 Val = [Val1,Val2];
 Val = double(Val);
 
-%% Prima parte LDA - Calcolo matrici within e between class - Tempo : 3 minuti 46 secondi
+%% Prima parte LDA - Calcolo matrici https://www.youtube.com/watch?v=WTCDAaYUHNowithin e between class - Tempo : 3 minuti 46 secondi
 
 TMP = double(TMP);
 l = reshape(repmat([1:2],5000,1),M,1); %Etichettatura delle prime 5000 immagini come immagini con mascherina e le seconde 5000 come senza mascherina
@@ -102,7 +103,7 @@ end
 
 % 2. determino le medie
 for k = 1:K
-    mk{k} = mean(Ck{k},2); %Media dei valori su 1 e media dei valori su 2
+    mk{k} = mean(Ck{k},2); %Media dei https://www.youtube.com/watch?v=WTCDAaYUHNovalori su 1 e media dei valori su 2
 end
 
 % 3. determino la numerosità della classe
@@ -262,13 +263,13 @@ end
 %Calcolo accuratezza classificazione dataset di test
 countc = 0;
 count = length(labelTest); % subtract the training elements
-for i=WithMask;
+for i=WithMask
     if labelTest(i)==1
         countc = countc + 1;
     end
 end
 
-for i=NoMask;
+for i=NoMask
     if labelTest(i)==2
         countc = countc + 1;
     end
@@ -280,13 +281,13 @@ accuracy = countc/count;
 
 countc = 0;
 count = length(labelVal); % subtract the training elements
-for i=WithMaskVal;
+for i=WithMaskVal
     if labelVal(i)==1
         countc = countc + 1;
     end
 end
 
-for i=NoMaskVal;
+for i=NoMaskVal
     if labelVal(i)==2
         countc = countc + 1;
     end
@@ -317,31 +318,8 @@ end
 %Calcolo accuratezza con confMatrix dataset di test
 accuracyConfMatrix = sum(diag(confmat))/sum(confmat(:))
 
-%Creo due array che contengono i falsi positivi in WithMask e NoMask
-fakeWithMask= [];
-for i=1:length(WithMask)
-    if WithMask(i)>483
-        fakeWithMask = [fakeWithMask,WithMask(i)];
-    end
-end
-    
-fakeNoMask= [];
-for i=1:length(NoMask)
-    if NoMask(i)<484
-        fakeNoMask = [fakeNoMask,NoMask(i)];
-    end
-end
-   
 
-%qui cambio la numerazione dei falsi positivi in WithMask per avere i numeri
-%corretti corrispondenti alla cartella delle immagini di NoMask
-false_positive1 = [];
-for i=1:length(fakeWithMask)
-    if fakeWithMask(i)>483
-        value = col - fakeWithMask(i);
-        false_positive1 = [false_positive1,col2-value];
-    end
-end
+
 
 %Calcolo matrice di confusione dateset di validation
 classif = labelVal.*0;
@@ -364,32 +342,35 @@ end
 %Calcolo accuratezza con confMatrix dataset di test
 accuracyConfMatrixVal = sum(diag(confmat))/sum(confmat(:))
 
+
+%% Plotting - Stampa immagini precise del data set di Training
+
+
 %Creo due array che contengono i falsi positivi in WithMask e NoMask
-fakeWithMaskVal= [];
-for i=1:length(WithMaskVal)
-    if WithMaskVal(i)>483
-        fakeWithMaskVal = [fakeWithMaskVal,WithMaskVal(i)];
+fakeWithMask= [];
+for i=1:length(WithMask)
+    if WithMask(i)>483
+        fakeWithMask = [fakeWithMask,WithMask(i)];
     end
 end
     
-fakeNoMaskVal= [];
-for i=1:length(NoMaskVal)
-    if NoMaskVal(i)<484
-        fakeNoMaskVal = [fakeNoMaskVal,NoMaskVal(i)];
+fakeNoMask= [];
+for i=1:length(NoMask)
+    if NoMask(i)<484
+        fakeNoMask = [fakeNoMask,NoMask(i)];
     end
 end
-
+   
 %qui cambio la numerazione dei falsi positivi in WithMask per avere i numeri
 %corretti corrispondenti alla cartella delle immagini di NoMask
 false_positive1 = [];
-for i=1:length(fakeWithMaskVal)
-    if fakeWithMaskVal(i)>483
-        value = col - fakeWithMaskVal(i);
+for i=1:length(fakeWithMask)
+    if fakeWithMask(i)>483
+        value = col - fakeWithMask(i);
         false_positive1 = [false_positive1,col2-value];
     end
 end
 
-%% Plotting - Stampa immagini precise del data set
 %Stampare le immagini richieste dell'insieme
 img = imread(strcat(images_dirTest,'/',listTest(483).name));
 imshow(img);
