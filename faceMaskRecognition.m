@@ -58,20 +58,7 @@ end
 Test = [Test1,Test2];
 Test = double(Test);
 
-
-%% Prima parte LDA - Setup e procedura PCA (deprecato)
-
-%media = mean(TMP,2); %Media del TMP
-
-%AA(:,:) = TMP-repmat(media,1,M); %Sottrazione della media ai punti delle immagini
-%[U,lambda] = eigen_training(AA); %Calcolo degli autovettori sulla matrice a cui è stata sottratta la media
-%T = 500; % Numero dei migliori autovettori da tenere, questo implica anche la dimensione dei dati proiettati sul nuovo asse
-%Prima si fà PCA e poi LDA
-%X = U(:,1:T)'*AA; %Proiezione dei punti senza media sugli autovettori migliori (QUESTA E' LA PROIZIONE DI PCA);
- % numero classi in gioco;
-
-
-%% Seconda parte LDA - Calcolo matrici within e between class - Tempo : 3 minuti 46 secondi
+%% Prima parte LDA - Calcolo matrici within e between class - Tempo : 3 minuti 46 secondi
 
 TMP = double(TMP);
 l = reshape(repmat([1:2],5000,1),M,1); %Etichettatura delle prime 5000 immagini come immagini con mascherina e le seconde 5000 come senza mascherina
@@ -118,7 +105,7 @@ Sbx = Sbx/K; %Normalizzazione della between class scatter matrix sul numero di c
 
 MA = inv(Swx)*Sbx; %Applicazione della LDA projection
 
-%% Terza parte LDA - Estrazione dell'autovettore e proiezione dei punti - Tempo : 9 secondi
+%% Seconda parte LDA - Estrazione dell'autovettore e proiezione dei punti - Tempo : 9 secondi
 
 % eigenvalues/eigenvectors
 [V,D] = eig(MA); %Estazione degli autovettori dalla porecedente matrice
@@ -135,17 +122,17 @@ Y = A'*TMP; %Proiezione vera e propria
 
 Y1 = Y(:,1:5000);
 Y2 = Y(:,5001:10000);
+%% Modello generativo - Stima dei parametri Gaussiani
 
+%Calcolo parametri classe WithMask
 sigma1 = std(Y1);
 mean1 = mean(Y1);
 
+%Calcolo parametri classe NoMask
 sigma2 = std(Y2);
 mean2 = mean(Y2);
 
 %% Plotting - Stampa dati prima e dopo LDA - Tempo : 3 secondi
-% 7: plot
-%figure;
-%scatter(Y,ones(1,N),[],l);
 
 %scatter 2D del TMP
 figure;
@@ -158,7 +145,6 @@ figure;
 scatter3(TMP1(1,:),TMP1(2,:),TMP1(3,:),'b');
 hold on
 scatter3(TMP2(1,:),TMP2(2,:),TMP2(3,:),'r');
-
 
 %figure;
 %scatter(Y1,ones(1,5000),[],'r');
@@ -178,8 +164,7 @@ hold on
 scatter(Y2,normpdf(Y2,mean2,sigma2)*100,10,'r');
 
 
-%% Learning del modello - Ricerca della Maximum Likelihood - Tempo : 1 secondo
-
+%% Testing - Classificazione dei punti di testing - Tempo : 1 secondo
 
 %Proiezione dei dati di test usando LDA
 YT = A'*Test;
@@ -213,7 +198,7 @@ end
 
 %% Prima parte accuratezza - Calcolo accuracy - Tempo : 1 secondo
 
-%Classi delle immagini conosciute a priori
+%Calcolo accuratezza classificazione dataset di test
 countc = 0;
 count = length(labelTest); % subtract the training elements
 for i=C1;
@@ -227,11 +212,12 @@ for i=C2;
         countc = countc + 1;
     end
 end
-%Calcolo accuracy
+%Calcolo accuracy dataset di test
 accuracy = countc/count;
 
 %% Seconda parte accurattezza - Calcolo matrice di confusione - Tempo : 1 secondo
 
+%Calcolo matrice di confusione dateset di test
 classif = labelTest.*0;
 classif(C1)=1;
 classif(C2)=2;
@@ -248,6 +234,7 @@ for i=1:num_class
     precision(i) = confmat(i,i)/(sum(confmat(:,i)));
     recall(i) = confmat(i,i)/(sum(confmat(i,:)));
 end
+%Calcolo accuratezza con confMatrix dataset di test
 accuracy = sum(diag(confmat))/sum(confmat(:))
 
 %Creo due array che contengono i falsi positivi in C1 e C2
@@ -276,13 +263,13 @@ for i=1:length(fakeC1)
     end
 end
 
-%% Plotting - Stampa risultati finali di classificazione
+%% Plotting - Stampa immagini precise del data set
 
 %Stampare le immagini richieste dell'insieme
-%img = imread(strcat(images_dirTest,'/',listTest(483).name));
-%imshow(img);
-%img = imread(strcat(images_dirTestNM,'/',listTestNM(27).name));
-%imshow(img);
+img = imread(strcat(images_dirTest,'/',listTest(483).name));
+imshow(img);
+img = imread(strcat(images_dirTestNM,'/',listTestNM(27).name));
+imshow(img);
 
 %% Plotting - Work in progress
 
@@ -334,9 +321,9 @@ legend({'precision','recall','accuracy'},'Location','southwest')
 
 subplot(2,1,2)
 
-precision = [a{2,1}.precision a{2,2}.precision a{2,3}.precision a{2,4}.precision a{2,5}.precision];
-recall = [a{2,1}.recall a{2,2}.recall a{2,3}.recall a{2,4}.recall a{2,5}.recall];
-accuracy = [a{2,1}.accuracy a{2,2}.accuracy a{2,3}.accuracy a{2,4}.accuracy a{2,5}.accuracy];
+%precision = [a{2,1}.precision a{2,2}.precision a{2,3}.precision a{2,4}.precision a{2,5}.precision];
+%recall = [a{2,1}.recall a{2,2}.recall a{2,3}.recall a{2,4}.recall a{2,5}.recall];
+%accuracy = [a{2,1}.accuracy a{2,2}.accuracy a{2,3}.accuracy a{2,4}.accuracy a{2,5}.accuracy];
 
 plot(features_vec,precision);
 
