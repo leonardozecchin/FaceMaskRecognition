@@ -4,8 +4,8 @@ close all
 clear all
 
 %Import delle immagini di training
-images_dir = 'FaceMaskDataset/Train/WithMask/'; 
-images_dirNM = 'FaceMaskDataset/Train/WithoutMask/';
+images_dir = 'archive/FaceMaskDataset/Train/WithMask/'; 
+images_dirNM = 'archive/FaceMaskDataset/Train/WithoutMask/';
 list = dir(strcat(images_dir,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
 listNM = dir(strcat(images_dirNM,'*.png')); %Struttura dati che contiene le informazioni delle immagini senza maschera
 M = size(list,1);
@@ -30,8 +30,8 @@ end
 TMP = [TMP1,TMP2];
 
 %Import delle immagini di testing
-images_dirTest = 'FaceMaskDataset/Test/WithMask/'; %Immagini di train con la maschera
-images_dirTestNM = 'FaceMaskDataset/Test/WithoutMask/'; %Immagini di train senza maschera
+images_dirTest = 'archive/FaceMaskDataset/Test/WithMask/'; %Immagini di train con la maschera
+images_dirTestNM = 'archive/FaceMaskDataset/Test/WithoutMask/'; %Immagini di train senza maschera
 listTest = dir(strcat(images_dirTest,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
 listTestNM = dir(strcat(images_dirTestNM,'*.png')); %Struttura dati che contiene le informazioni delle immagini senza maschera 
 
@@ -57,6 +57,35 @@ end
 %Insieme di tutti i valori delle immagini di testing
 Test = [Test1,Test2];
 Test = double(Test);
+
+%Import delle immagini di validation
+images_dirVal = 'archive/FaceMaskDataset/Validation/WithMask/'; %Immagini di train con la maschera
+images_dirValNM = 'archive/FaceMaskDataset/Validation/WithoutMask/'; %Immagini di train senza maschera
+listVal = dir(strcat(images_dirVal,'*.png')); %Struttura dati che contiene le informazioni delle immagini con maschera 
+listValNM = dir(strcat(images_dirValNM,'*.png')); %Struttura dati che contiene le informazioni delle immagini senza maschera 
+
+numimgVal = size(listVal,1);
+numimgVal = numimgVal + size(listValNM,1) %Numero delle immagini insieme
+
+%Trasformazione dei valori delle immagini in un singolo vettore e aggiunta di queste nel vettore TMP
+for i=1:size(listVal,1)
+    val         =   imresize(imread(strcat(images_dirVal,'/',listVal(i).name)),[30 30]); %Resize delle immagini in modo che siano tutte uguali e che non esploda il PC
+    [r,c,ch] = size(val); %Dimensioni delle immagini, altezza, larghezza e colore
+
+    val1        =   reshape(val,r*c*ch,1);                                
+    Val1(:,i)    =   val1; 
+end
+
+for j=1:size(listValNM,1)
+    val2 = imresize(imread(strcat(images_dirValNM,'/',listValNM(j).name)),[30 30]);
+    [r,c,ch] = size(val2);
+    val22        =   reshape(val2,r*c*ch,1);
+    Val2(:,j) = val22;
+end
+
+%Insieme di tutti i valori delle immagini di testing
+Val = [Val1,Val2];
+Val = double(Val);
 
 %% Prima parte LDA - Calcolo matrici within e between class - Tempo : 3 minuti 46 secondi
 
@@ -163,23 +192,22 @@ scatter(Y1,normpdf(Y1,mean1,sigma1)*100,10,'b');
 hold on
 scatter(Y2,normpdf(Y2,mean2,sigma2)*100,10,'r');
 
-
 %% Testing - Classificazione dei punti di testing - Tempo : 1 secondo
 
 %Proiezione dei dati di test usando LDA
 YT = A'*Test;
 
 %Memorizzazione dimensione test
-[row1,col1] = size(Test1);
-[row2,col2] = size(Test2);
+[row,col1] = size(Test1);
+[row,col2] = size(Test2);
 [row,col] = size(Test);
 
 labelTest = ones(1,col);
 labelTest(:,col1+1:col) = 2;
 
 %Creazione delle classi with_mask without_mask
-C1=[];
-C2=[];
+WithMask=[];
+NoMask=[];
 %z=0; Provo a commentarlo
 
 %Learning del modello generativo di Bayes
@@ -190,24 +218,57 @@ for z=1:col
     LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
     %Classificazione del punto
     if LK1 >LK2
-        C1 = [C1,z];
+        WithMask = [WithMask,z];
     else
-        C2 = [C2,z];
+        NoMask = [NoMask,z];
     end
 end
+
+%% Calssification with images of Validation folders - Ricerca della Maximum Likelihood - Tempo : 1 secondo
+
+%Proiezione dei dati di test usando LDA
+YV = A'*Val;
+
+%Memorizzazione dimensione test
+[row,col1v] = size(Val1);
+[row,col2v] = size(Val2);
+[row,colv] = size(Val);
+
+labelVal = ones(1,colv);
+labelVal(:,col1v+1:colv) = 2;
+
+%Creazione delle classi with_mask without_mask
+WithMaskVal=[];
+NoMaskVal=[];
+%z=0; Provo a commentarlo
+
+%Learning del modello generativo di Bayes
+for z=1:colv
+    t = YV(:,z);
+    %Calcolo della likehood per ogni punto del dataset di learning
+    LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
+    LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
+    %Classificazione del punto
+    if LK1 >LK2
+        WithMaskVal = [WithMaskVal,z];
+    else
+        NoMaskVal = [NoMaskVal,z];
+    end
+end
+
 
 %% Prima parte accuratezza - Calcolo accuracy - Tempo : 1 secondo
 
 %Calcolo accuratezza classificazione dataset di test
 countc = 0;
 count = length(labelTest); % subtract the training elements
-for i=C1;
+for i=WithMask;
     if labelTest(i)==1
         countc = countc + 1;
     end
 end
 
-for i=C2;
+for i=NoMask;
     if labelTest(i)==2
         countc = countc + 1;
     end
@@ -215,12 +276,30 @@ end
 %Calcolo accuracy dataset di test
 accuracy = countc/count;
 
+%Calcolo accuratezza classificazione dataset di validation
+
+countc = 0;
+count = length(labelVal); % subtract the training elements
+for i=WithMaskVal;
+    if labelVal(i)==1
+        countc = countc + 1;
+    end
+end
+
+for i=NoMaskVal;
+    if labelVal(i)==2
+        countc = countc + 1;
+    end
+end
+%Calcolo accuracy dataset di validation
+accuracyValidation = countc/count;
+
 %% Seconda parte accurattezza - Calcolo matrice di confusione - Tempo : 1 secondo
 
 %Calcolo matrice di confusione dateset di test
 classif = labelTest.*0;
-classif(C1)=1;
-classif(C2)=2;
+classif(WithMask)=1;
+classif(NoMask)=2;
 goodtest = find(classif~=0);
 confmat = zeros(2,2); %Matrice di confusione
 for i=1:length(goodtest)
@@ -234,37 +313,83 @@ for i=1:num_class
     precision(i) = confmat(i,i)/(sum(confmat(:,i)));
     recall(i) = confmat(i,i)/(sum(confmat(i,:)));
 end
-%Calcolo accuratezza con confMatrix dataset di test
-accuracy = sum(diag(confmat))/sum(confmat(:))
 
-%Creo due array che contengono i falsi positivi in C1 e C2
-fakeC1= [];
-for i=1:length(C1)
-    if C1(i)>483
-        fakeC1 = [fakeC1,C1(i)];
+%Calcolo accuratezza con confMatrix dataset di test
+accuracyConfMatrix = sum(diag(confmat))/sum(confmat(:))
+
+%Creo due array che contengono i falsi positivi in WithMask e NoMask
+fakeWithMask= [];
+for i=1:length(WithMask)
+    if WithMask(i)>483
+        fakeWithMask = [fakeWithMask,WithMask(i)];
     end
 end
     
-fakeC2= [];
-for i=1:length(C2)
-    if C2(i)<484
-        fakeC2 = [fakeC2,C2(i)];
+fakeNoMask= [];
+for i=1:length(NoMask)
+    if NoMask(i)<484
+        fakeNoMask = [fakeNoMask,NoMask(i)];
     end
 end
    
 
-%qui cambio la numerazione dei falsi positivi in C1 per avere i numeri
+%qui cambio la numerazione dei falsi positivi in WithMask per avere i numeri
 %corretti corrispondenti alla cartella delle immagini di NoMask
 false_positive1 = [];
-for i=1:length(fakeC1)
-    if fakeC1(i)>483
-        value = col - fakeC1(i);
+for i=1:length(fakeWithMask)
+    if fakeWithMask(i)>483
+        value = col - fakeWithMask(i);
+        false_positive1 = [false_positive1,col2-value];
+    end
+end
+
+%Calcolo matrice di confusione dateset di validation
+classif = labelVal.*0;
+classif(WithMaskVal)=1;
+classif(NoMaskVal)=2;
+goodtest = find(classif~=0);
+confmat = zeros(2,2); %Matrice di confusione
+for i=1:length(goodtest)
+    el = goodtest(i);
+     confmat(classif(el),labelVal(el))=...
+         confmat(classif(el),labelVal(el))+1;
+end
+
+num_class = 2;
+for i=1:num_class
+    precisionVal(i) = confmat(i,i)/(sum(confmat(:,i)));
+    recallVal(i) = confmat(i,i)/(sum(confmat(i,:)));
+end
+
+%Calcolo accuratezza con confMatrix dataset di test
+accuracyConfMatrixVal = sum(diag(confmat))/sum(confmat(:))
+
+%Creo due array che contengono i falsi positivi in WithMask e NoMask
+fakeWithMaskVal= [];
+for i=1:length(WithMaskVal)
+    if WithMaskVal(i)>483
+        fakeWithMaskVal = [fakeWithMaskVal,WithMaskVal(i)];
+    end
+end
+    
+fakeNoMaskVal= [];
+for i=1:length(NoMaskVal)
+    if NoMaskVal(i)<484
+        fakeNoMaskVal = [fakeNoMaskVal,NoMaskVal(i)];
+    end
+end
+
+%qui cambio la numerazione dei falsi positivi in WithMask per avere i numeri
+%corretti corrispondenti alla cartella delle immagini di NoMask
+false_positive1 = [];
+for i=1:length(fakeWithMaskVal)
+    if fakeWithMaskVal(i)>483
+        value = col - fakeWithMaskVal(i);
         false_positive1 = [false_positive1,col2-value];
     end
 end
 
 %% Plotting - Stampa immagini precise del data set
-
 %Stampare le immagini richieste dell'insieme
 img = imread(strcat(images_dirTest,'/',listTest(483).name));
 imshow(img);
@@ -295,7 +420,9 @@ text((x*10).^2*3,y,symbol_max);
 [~,x] = find(precision == min(min(precision)));
 text((x*10).^2*3,min(min(precision)),symbol_min);
 
-hold on;
+hold on;% 7: plot
+%figure;
+%scatter(Y,ones(1,N),[],l);
 plot(features_vec,recall);
 
 [y,x] = max(recall);
