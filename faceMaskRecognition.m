@@ -212,88 +212,15 @@ YV = A'*Val;
 
 %% Prima parte accuratezza - Calcolo accuracy - Tempo : 1 secondo
 
-%Calcolo accuratezza classificazione dataset di test
-countc = 0;
-count = length(labelTest); % subtract the training elements
-for i=WithMask
-    if labelTest(i)==1
-        countc = countc + 1;
-    end
-end
+accuracyTest = simple_acccurancy(labelTest,WithMask,NoMask);
 
-for i=NoMask
-    if labelTest(i)==2
-        countc = countc + 1;
-    end
-end
-%Calcolo accuracy dataset di test
-accuracy = countc/count;
-
-%Calcolo accuratezza classificazione dataset di validation
-
-countc = 0;
-count = length(labelVal); % subtract the training elements
-for i=WithMaskVal
-    if labelVal(i)==1
-        countc = countc + 1;
-    end
-end
-
-for i=NoMaskVal
-    if labelVal(i)==2
-        countc = countc + 1;
-    end
-end
-%Calcolo accuracy dataset di validation
-accuracyValidation = countc/count;
+accuracyValidation = simple_acccurancy(labelVal,WithMaskVal,NoMaskVal);
 
 %% Seconda parte accurattezza - Calcolo matrice di confusione - Tempo : 1 secondo
 
-%Calcolo matrice di confusione dateset di test
-classif = labelTest.*0;
-classif(WithMask)=1;
-classif(NoMask)=2;
-goodtest = find(classif~=0);
-confmat = zeros(2,2); %Matrice di confusione
-for i=1:length(goodtest)
-    el = goodtest(i);
-     confmat(classif(el),labelTest(el))=...
-         confmat(classif(el),labelTest(el))+1;
-end
+[accuracyConfMTest,precisionTest,recallTest] = confMatrix_accuracy(labelTest,WithMask,NoMask);
 
-num_class = 2;
-for i=1:num_class
-    precision(i) = confmat(i,i)/(sum(confmat(:,i)));
-    recall(i) = confmat(i,i)/(sum(confmat(i,:)));
-end
-
-%Calcolo accuratezza con confMatrix dataset di test
-accuracyConfMatrix = sum(diag(confmat))/sum(confmat(:))
-
-
-
-
-%Calcolo matrice di confusione dateset di validation
-classif = labelVal.*0;
-classif(WithMaskVal)=1;
-classif(NoMaskVal)=2;
-goodtest = find(classif~=0);
-confmat = zeros(2,2); %Matrice di confusione
-for i=1:length(goodtest)
-    el = goodtest(i);
-     confmat(classif(el),labelVal(el))=...
-         confmat(classif(el),labelVal(el))+1;
-end
-
-num_class = 2;
-for i=1:num_class
-    precisionVal(i) = confmat(i,i)/(sum(confmat(:,i)));
-    recallVal(i) = confmat(i,i)/(sum(confmat(i,:)));
-end
-
-%Calcolo accuratezza con confMatrix dataset di test
-accuracyConfMatrixVal = sum(diag(confmat))/sum(confmat(:))
-
+[accuracyConfMVal,precisionVal,recallVal] = confMatrix_accuracy(labelVal,WithMaskVal,NoMaskVal);
 
 %% Plotting - Stampa immagini precise del data set di Training
 
@@ -323,97 +250,10 @@ for i=1:length(fakeWithMask)
     end
 end
 
-%Stampare le immagini richieste dell'insieme
+%% Stampare le immagini richieste dell'insieme
 img = imread(strcat(images_dirTest,'/',listTest(483).name));
 imshow(img);
 img = imread(strcat(images_dirTestNM,'/',listTestNM(27).name));
 imshow(img);
 
-%% Plotting - Work in progress
-
-%function [] = plot_result_matrix(precision,recall, accuracy,method)
-method = 'Single gaussian estimated parameters';
-symbol_max = 'max';
-symbol_min = 'min';
-
-features_vec = ([1:5] *10).^2 * 3;
-
-figure('NumberTitle', 'off', 'Name', method);
-subplot(2,1,1)
-
-%precision = [result_matrix{1,1}.precision result_matrix{1,2}.precision result_matrix{1,3}.precision result_matrix{1,4}.precision result_matrix{1,5}.precision];
-%recall = [result_matrix{1,1}.recall result_matrix{1,2}.recall result_matrix{1,3}.recall result_matrix{1,4}.recall result_matrix{1,5}.recall];
-%accuracy = [result_matrix{1,1}.accuracy result_matrix{1,2}.accuracy result_matrix{1,3}.accuracy result_matrix{1,4}.accuracy result_matrix{1,5}.accuracy];
-
-plot(features_vec,precision);
-
-[y,x] = max(precision);
-text((x*10).^2*3,y,symbol_max);
-
-[~,x] = find(precision == min(min(precision)));
-text((x*10).^2*3,min(min(precision)),symbol_min);
-
-hold on;% 7: plot
-%figure;
-%scatter(Y,ones(1,N),[],l);
-plot(features_vec,recall);
-
-[y,x] = max(recall);
-text((x*10).^2*3,y,symbol_max);
-
-[~,x] = find(recall == min(min(recall)));
-text((x*10).^2*3,min(min(recall)),symbol_min);
-
-hold on;
-plot(features_vec,accuracy);
-
-[y,x] = max(accuracy);
-text((x*10).^2*3,y,symbol_max);
-
-[~,x] = find(accuracy == min(min(accuracy)));
-text((x*10).^2*3,min(min(accuracy)),symbol_min);
-
-
-title('test set')
-xlabel('features')
-
-legend({'precision','recall','accuracy'},'Location','southwest')
-
-subplot(2,1,2)
-
-%precision = [a{2,1}.precision a{2,2}.precision a{2,3}.precision a{2,4}.precision a{2,5}.precision];
-%recall = [a{2,1}.recall a{2,2}.recall a{2,3}.recall a{2,4}.recall a{2,5}.recall];
-%accuracy = [a{2,1}.accuracy a{2,2}.accuracy a{2,3}.accuracy a{2,4}.accuracy a{2,5}.accuracy];
-
-plot(features_vec,precision);
-
-[y,x] = max(precision);
-text((x*10).^2*3,y,symbol_max);
-
-[~,x] = find(precision == min(min(precision)));
-text((x*10).^2*3,min(min(precision)),symbol_min);
-
-hold on;
-plot(features_vec,recall);
-
-[y,x] = max(recall);
-text((x*10).^2*3,y,symbol_max);
-
-[~,x] = find(recall == min(min(recall)));
-text((x*10).^2*3,min(min(recall)),symbol_min);
-
-hold on;
-plot(features_vec,accuracy);
-
-[y,x] = max(accuracy);
-text((x*10).^2*3,y,symbol_max);
-
-[~,x] = find(accuracy == min(min(accuracy)));
-text((x*10).^2*3,min(min(accuracy)),symbol_min);
-
-title('validation set')
-xlabel('features')
-
-legend({'precision','recall','accuracy'},'Location','southwest')
-%end
 

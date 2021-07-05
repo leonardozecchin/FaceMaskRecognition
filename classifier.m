@@ -1,4 +1,4 @@
-function [WithMask,NoMask,label] = classifier(YT,T,T1,T2,mean1,sigma1,mean2,sigma2)
+function [WithMask,NoMask,label] = classifier(Y,T,T1,T2,mean1,sigma1,mean2,sigma2)
 
 %Memorizzazione dimensione test
 [row,col1] = size(T1);
@@ -15,7 +15,7 @@ NoMask=[];
 
 %Learning del modello generativo di Bayes
 for z=1:col
-    t = YT(:,z);
+    t = Y(:,z);
     %Calcolo della likehood per ogni punto del dataset di learning
     LK1 = sum(log(normpdf(double(t),double(mean1),double(sigma1'+eps))));
     LK2 = sum(log(normpdf(double(t),double(mean2),double(sigma2'+eps))));
